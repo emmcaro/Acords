@@ -1,2 +1,2 @@
 # Acords
-app çer jugarva endevinar motes dels acords bàsics
+app per jugar a endevinar notes dels acords triades
