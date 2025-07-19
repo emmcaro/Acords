@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <title>Entrenador d'Acords</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 40px; }
+    input {
+      padding: 12px;
+      width: 320px;
+      font-size: 18px;
+      text-transform: uppercase;
+    }
+    button {
+      padding: 16px 32px;
+      margin: 10px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    #resultat, #punts, #temps, #resum {
+      font-weight: bold;
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    #temps { color: darkred; }
+  </style>
+</head>
+<body>
+
+  <h1>🎹 Endevina les notes de l'acord</h1>
+  <p id="acordPregunta">Carregant acord...</p>
+
+  <input type="text" id="resposta" placeholder="Ex: C E G" oninput="majuscules(this)" autocomplete="off" />
+  <br />
+
+  <!-- Botons invertits -->
+  <button onclick="comprovar()">Comprovar</button>
+  <button onclick="desbloquejarSo(); nouAcord()">Següent</button>
+
+  <p id="resultat"></p>
+  <p id="punts">Punts: 0</p>
+  <p id="temps">Temps restant: -</p>
+  <p id="resum"></p>
+
+  <!-- Sons -->
+  <audio id="soCorrecte" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+  <audio id="soError" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg"></audio>
+
+  <script>
+    const acords = {
+      "C": ["C", "E", "G"], "C#": ["C#", "E#", "G#"], "Db": ["Db", "F", "Ab"],
+      "D": ["D", "F#", "A"], "D#": ["D#", "Fx", "A#"], "Eb": ["Eb", "G", "Bb"],
+      "E": ["E", "G#", "B"], "F": ["F", "A", "C"], "F#": ["F#", "A#", "C#"],
+      "Gb": ["Gb", "Bb", "Db"], "G": ["G", "B", "D"], "G#": ["G#", "B#", "D#"],
+      "Ab": ["Ab", "C", "Eb"], "A": ["A", "C#", "E"], "A#": ["A#", "C##", "E#"],
+      "Bb": ["Bb", "D", "F"], "B": ["B", "D#", "F#"], "Cb": ["Cb", "Eb", "Gb"],
+      "Cm": ["C", "Eb", "G"], "C#m": ["C#", "E", "G#"], "Dbm": ["Db", "Fb", "Ab"],
+      "Dm": ["D", "F", "A"], "D#m": ["D#", "F#", "A#"], "Ebm": ["Eb", "Gb", "Bb"],
+      "Em": ["E", "G", "B"], "Fm": ["F", "Ab", "C"], "F#m": ["F#", "A", "C#"],
+      // "Gbm": ["Gb", "A", "Db"],  <-- eliminat
+      "Gm": ["G", "Bb", "D"], "G#m": ["G#", "B", "D#"],
+      "Abm": ["Ab", "Cb", "Eb"], "Am": ["A", "C", "E"], "A#m": ["A#", "C#", "E#"],
+      "Bbm": ["Bb", "Db", "F"], "Bm": ["B", "D", "F#"]
+    };
+
+    let acordActual = "";
+    let notesActuals = [];
+    let punts = 0;
+    let totalRespostes = 0;
+    let temps = 15;
+    let intervalId = null;
+    const tempsMaxim = 15;
+    let soDesbloquejat = false;
+
+    const soCorrecte = document.getElementById("soCorrecte");
+    const soError = document.getElementById("soError");
+
+    function majuscules(input) {
+      input.value = input.value.toUpperCase();
+    }
+
+    function desbloquejarSo() {
+      if (!soDesbloquejat) {
+        // Prova a reproduir per desbloquejar so a navegadors
+        soCorrecte.play().catch(() => {});
+        soError.play().catch(() => {});
+        soDesbloquejat = true;
+      }
+    }
+
+    function nouAcord() {
+      if (totalRespostes >= 10) return;
+
+      const nomsAcords = Object.keys(acords);
+      acordActual = nomsAcords[Math.floor(Math.random() * nomsAcords.length)];
+      notesActuals = acords[acordActual];
+
+      document.getElementById("acordPregunta").textContent = `Quines són les notes de l'acord ${acordActual}?`;
+      document.getElementById("resultat").textContent = "";
+      document.getElementById("resposta").value = "";
+      document.getElementById("temps").textContent = `Temps restant: ${tempsMaxim}s`;
+
+      temps = tempsMaxim;
+      if (intervalId) clearInterval(intervalId);
+      intervalId = setInterval(actualitzarTemps, 1000);
+    }
+
+    function actualitzarTemps() {
+      temps--;
+      document.getElementById("temps").textContent = `Temps restant: ${temps}s`;
+      if (temps <= 0) {
+        clearInterval(intervalId);
+        soError.play();
+        mostrarResultat(false, `⏰ Temps esgotat! Resposta correcta: ${notesActuals.join(" ")}`);
+        totalRespostes++;
+        actualitzarEstat();
+      }
+    }
+
+    function netejarNotes(notesArray) {
+      return notesArray
+        .map(n => n.trim().toUpperCase())
+        .sort();
+    }
+
+    function comprovar() {
+      if (temps <= 0 || totalRespostes >= 10) return;
+
+      let resposta = document.getElementById("resposta").value
+        .trim()
+        .toUpperCase()
+        .split(/\s+/);
+
+      const respostaNeta = netejarNotes(resposta);
+      const correcteNeta = netejarNotes(notesActuals);
+
+      clearInterval(intervalId);
+      totalRespostes++;
+
+      if (JSON.stringify(respostaNeta) === JSON.stringify(correcteNeta)) {
+        punts++;
+        soCorrecte.play();
+        mostrarResultat(true, "✅ Correcte!");
+      } else {
+        soError.play();
+        mostrarResultat(false, `❌ Incorrecte. Resposta correcta: ${notesActuals.join(" ")}`);
+      }
+
+      actualitzarEstat();
+    }
+
+    function mostrarResultat(correcte, missatge) {
+      const el = document.getElementById("resultat");
+      el.textContent = missatge;
+      el.style.color = correcte ? "green" : "red";
+    }
+
+    function actualitzarEstat() {
+      document.getElementById("punts").textContent = `Punts: ${punts}`;
+      if (totalRespostes >= 10) {
+        document.getElementById("acordPregunta").textContent = "🏁 Has acabat!";
+        document.getElementById("temps").textContent = "-";
+        document.getElementById("resum").textContent = `Has encertat ${punts} de 10 acords.`;
+      }
+    }
+
+    // Comença automàticament el primer acord
+    window.onload = () => {
+      desbloquejarSo();
+      nouAcord();
+    };
+  </script>
+
+</body>
+</html>
