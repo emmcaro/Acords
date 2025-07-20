@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ca">
 <head>
@@ -63,6 +64,12 @@
       color: darkred;
     }
 
+    #teclat {
+      margin-top: 15px;
+      max-width: 100%;
+      height: auto;
+    }
+
     audio {
       display: none;
     }
@@ -81,6 +88,7 @@
   <p id="resultat"></p>
   <p id="punts">Punts: 0</p>
   <p id="temps">Temps restant: -</p>
+  <img id="teclat" src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Piano_keyboard_2_octaves.png" alt="Teclat de piano" />
   <p id="resum"></p>
 
   <audio id="soCorrecte" src="sounds/correcte.mp3" preload="auto"></audio>
@@ -245,5 +253,6 @@
       nouAcord();
     };
   </script>
+
 </body>
 </html>
