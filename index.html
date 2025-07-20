@@ -1,1 +1,93 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <title>Entrenador d'acords</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    input {
+      margin: 0.5rem;
+      padding: 0.5rem;
+      width: 100px;
+    }
+    button {
+      font-size: 1rem;
+      padding: 0.7rem 1.2rem;
+      margin: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Quines notes té aquest acord?</h1>
+  <h2 id="acord"></h2>
+
+  <div>
+    <input type="text" id="nota1" placeholder="Nota 1">
+    <input type="text" id="nota2" placeholder="Nota 2">
+    <input type="text" id="nota3" placeholder="Nota 3">
+  </div>
+
+  <div style="display: flex; flex-direction: column; align-items: center; margin-top: 1rem;">
+    <button onclick="comprovar()">Comprovar</button>
+    <button onclick="seguent()">Següent</button>
+  </div>
+
+  <p id="feedback"></p>
+
+  <!-- Àudio -->
+  <audio id="soCorrecte" src="sounds/correcte.ogg" preload="auto"></audio>
+  <audio id="soError" src="sounds/error.ogg" preload="auto"></audio>
+
+  <script>
+    const acords = {
+      "Do major": ["C", "E", "G"],
+      "La menor": ["A", "C", "E"],
+      "Re major": ["D", "F#", "A"],
+      "Mi menor": ["E", "G", "B"]
+      // Afegeix més acords si vols
+    };
+
+    let acordActual;
+
+    function triarAcord() {
+      const claus = Object.keys(acords);
+      const aleatori = claus[Math.floor(Math.random() * claus.length)];
+      acordActual = aleatori;
+      document.getElementById("acord").textContent = acordActual;
+      document.getElementById("nota1").value = "";
+      document.getElementById("nota2").value = "";
+      document.getElementById("nota3").value = "";
+      document.getElementById("feedback").textContent = "";
+    }
+
+    function comprovar() {
+      const n1 = document.getElementById("nota1").value.trim().toUpperCase();
+      const n2 = document.getElementById("nota2").value.trim().toUpperCase();
+      const n3 = document.getElementById("nota3").value.trim().toUpperCase();
+      const resposta = [n1, n2, n3].sort().join(",");
+      const correcta = acords[acordActual].map(n => n.toUpperCase()).sort().join(",");
+
+      if (resposta === correcta) {
+        document.getElementById("feedback").textContent = "✅ Correcte!";
+        document.getElementById("soCorrecte").play();
+      } else {
+        document.getElementById("feedback").textContent = "❌ Incorrecte. Resposta: " + acords[acordActual].join(", ");
+        document.getElementById("soError").play();
+      }
+    }
+
+    function seguent() {
+      triarAcord();
+    }
+
+    // Iniciar primer acord automàticament
+    triarAcord();
+  </script>
+</body>
+</html>
 
