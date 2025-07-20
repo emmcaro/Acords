@@ -4,51 +4,30 @@
   <meta charset="UTF-8" />
   <title>Entrenador d'Acords</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 20px;
-      padding: 0 10px;
-    }
-
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 40px; }
     input {
       padding: 12px;
-      width: 90%;
-      max-width: 320px;
+      width: 320px;
       font-size: 18px;
     }
-
     button {
       display: block;
-      width: 90%;
-      max-width: 200px;
+      width: 200px;
       margin: 10px auto;
       padding: 16px 0;
       font-size: 18px;
       cursor: pointer;
     }
-
     button:disabled {
       background-color: #ccc;
       cursor: not-allowed;
     }
-
     #resultat, #punts, #temps, #resum {
       font-weight: bold;
       margin-top: 20px;
       font-size: 18px;
     }
-
-    #temps {
-      color: darkred;
-    }
-
-    svg#teclat {
-      margin-top: 20px;
-      width: 100%;
-      max-width: 600px;
-      height: auto;
-    }
+    #temps { color: darkred; }
   </style>
 </head>
 <body>
@@ -57,44 +36,13 @@
   <p id="acordPregunta">Carregant acord...</p>
 
   <input type="text" id="resposta" placeholder="Ex: C E G" autocomplete="off" />
+
   <button id="btnComprovar">Comprovar</button>
   <button id="btnSeguent">Següent</button>
 
   <p id="resultat"></p>
   <p id="punts">Punts: 0</p>
   <p id="temps">Temps restant: -</p>
-
-  <!-- Teclat SVG de dues octaves -->
-  <svg id="teclat" viewBox="0 0 560 120" xmlns="http://www.w3.org/2000/svg">
-    <!-- Tecles blanques -->
-    <rect x="0"   y="0" width="40" height="120" fill="white" stroke="black"/>
-    <rect x="40"  y="0" width="40" height="120" fill="white" stroke="black"/>
-    <rect x="80"  y="0" width="40" height="120" fill="white" stroke="black"/>
-    <rect x="120" y="0" width="40" height="120" fill="white" stroke="black"/>
-    <rect x="160" y="0" width="40" height="120" fill="white" stroke="black"/>
-    <rect x="200" y="0" width="40" height="120" fill="white" stroke="black"/>
-    <rect x="240" y="0" width="40" height="120" fill="white" stroke="black"/>
-    <rect x="280" y="0" width="40" height="120" fill="white" stroke="black"/>
-    <rect x="320" y="0" width="40" height="120" fill="white" stroke="black"/>
-    <rect x="360" y="0" width="40" height="120" fill="white" stroke="black"/>
-    <rect x="400" y="0" width="40" height="120" fill="white" stroke="black"/>
-    <rect x="440" y="0" width="40" height="120" fill="white" stroke="black"/>
-    <rect x="480" y="0" width="40" height="120" fill="white" stroke="black"/>
-    <rect x="520" y="0" width="40" height="120" fill="white" stroke="black"/>
-    
-    <!-- Tecles negres -->
-    <rect x="30"  y="0" width="20" height="80" fill="black"/>
-    <rect x="70"  y="0" width="20" height="80" fill="black"/>
-    <rect x="150" y="0" width="20" height="80" fill="black"/>
-    <rect x="190" y="0" width="20" height="80" fill="black"/>
-    <rect x="230" y="0" width="20" height="80" fill="black"/>
-    <rect x="310" y="0" width="20" height="80" fill="black"/>
-    <rect x="350" y="0" width="20" height="80" fill="black"/>
-    <rect x="430" y="0" width="20" height="80" fill="black"/>
-    <rect x="470" y="0" width="20" height="80" fill="black"/>
-    <rect x="510" y="0" width="20" height="80" fill="black"/>
-  </svg>
-
   <p id="resum"></p>
 
   <audio id="soCorrecte" src="sounds/correcte.mp3" preload="auto"></audio>
@@ -102,10 +50,162 @@
   <audio id="soBenvinguda" src="sounds/benvinguda.mp3" preload="auto"></audio>
 
   <script>
-    // El teu codi JavaScript complet ja està afegit aquí.
-    // El mantinc igual que a la versió anterior per no fer-ho més llarg ara.
-    // Si el vols aquí íntegre amb el SVG, t’ho copio sencer sense problema.
-  </script>
+    const acordsPerNivell = {
+      facil: {
+        "C": ["C", "E", "G"], "D": ["D", "F#", "A"], "E": ["E", "G#", "B"],
+        "F": ["F", "A", "C"], "G": ["G", "B", "D"], "A": ["A", "C#", "E"], "B": ["B", "D#", "F#"],
+        "Cm": ["C", "Eb", "G"], "Dm": ["D", "F", "A"], "Em": ["E", "G", "B"],
+        "Fm": ["F", "Ab", "C"], "Gm": ["G", "Bb", "D"], "Am": ["A", "C", "E"], "Bm": ["B", "D", "F#"]
+      },
+      mitja: {
+        "F#": ["F#", "A#", "C#"], "Bb": ["Bb", "D", "F"], "Eb": ["Eb", "G", "Bb"],
+        "Ab": ["Ab", "C", "Eb"], "Db": ["Db", "F", "Ab"], "Bbm": ["Bb", "Db", "F"],
+        "Ebm": ["Eb", "Gb", "Bb"], "F#m": ["F#", "A", "C#"], "Abm": ["Ab", "Cb", "Eb"]
+      },
+      dificil: {
+        "G#m": ["G#", "B", "D#"], "C#m": ["C#", "E", "G#"], "A#m": ["A#", "C#", "E#"],
+        "Dbm": ["Db", "Fb", "Ab"], "Cb": ["Cb", "Eb", "Gb"], "A#": ["A#", "C##", "E#"],
+        "C#": ["C#", "E#", "G#"], "D#m": ["D#", "F#", "A#"], "Gb": ["Gb", "Bb", "Db"]
+      }
+    };
 
+    let acordsActuals = {};
+    let acordActual = "";
+    let notesActuals = [];
+    let punts = 0;
+    let totalRespostes = 0;
+    const tempsMaxim = 15;
+    let temps = tempsMaxim;
+    let intervalId = null;
+    let respostaJaComprovada = false;
+    let acordsMostrats = [];
+
+    const btnComprovar = document.getElementById("btnComprovar");
+    const btnSeguent = document.getElementById("btnSeguent");
+    const inputResposta = document.getElementById("resposta");
+
+    let soCorrecte = document.getElementById("soCorrecte");
+    let soError = document.getElementById("soError");
+    let soBenvinguda = document.getElementById("soBenvinguda");
+
+    function obtenirAcordPerDificultat() {
+      if (totalRespostes < 4) return acordsPerNivell.facil;
+      if (totalRespostes < 8) return acordsPerNivell.mitja;
+      return acordsPerNivell.dificil;
+    }
+
+    function nouAcord() {
+      if (totalRespostes >= 10) return;
+
+      acordsActuals = obtenirAcordPerDificultat();
+      const nomsAcordsDisponibles = Object.keys(acordsActuals).filter(a => !acordsMostrats.includes(a));
+
+      if (nomsAcordsDisponibles.length === 0) {
+        acordsMostrats = [];
+        nomsAcordsDisponibles.push(...Object.keys(acordsActuals));
+      }
+
+      acordActual = nomsAcordsDisponibles[Math.floor(Math.random() * nomsAcordsDisponibles.length)];
+      notesActuals = acordsActuals[acordActual];
+      acordsMostrats.push(acordActual);
+
+      document.getElementById("acordPregunta").textContent = `Quines són les notes de l'acord ${acordActual}?`;
+      document.getElementById("resultat").textContent = "";
+      inputResposta.value = "";
+      document.getElementById("temps").textContent = `Temps restant: ${tempsMaxim}s`;
+
+      temps = tempsMaxim;
+      if (intervalId) clearInterval(intervalId);
+      intervalId = setInterval(actualitzarTemps, 1000);
+
+      respostaJaComprovada = false;
+
+      btnComprovar.disabled = false;
+      btnSeguent.disabled = false;
+      inputResposta.disabled = false;
+      inputResposta.focus();
+    }
+
+    function actualitzarTemps() {
+      temps--;
+      document.getElementById("temps").textContent = `Temps restant: ${temps}s`;
+      if (temps <= 0) {
+        clearInterval(intervalId);
+        if (!respostaJaComprovada) {
+          soError.play();
+          mostrarResultat(false, `⏰ Temps esgotat! Resposta correcta: ${notesActuals.join(" ")}`);
+          totalRespostes++;
+          bloquejarSiAcabat();
+          respostaJaComprovada = true;
+          setTimeout(nouAcord, 3000);
+        }
+      }
+    }
+
+    function netejarNotes(notesArray) {
+      return notesArray.map(n => n.trim().toUpperCase()).sort();
+    }
+
+    function comprovar() {
+      if (respostaJaComprovada || temps <= 0 || totalRespostes >= 10) return;
+
+      const resposta = inputResposta.value.trim().split(/\s+/);
+      if (resposta.length !== 3) {
+        mostrarResultat(false, "⚠️ Introdueix EXACTAMENT 3 notes.");
+        return;
+      }
+
+      const respostaNeta = netejarNotes(resposta);
+      const correcteNeta = netejarNotes(notesActuals);
+
+      clearInterval(intervalId);
+      totalRespostes++;
+      respostaJaComprovada = true;
+
+      if (JSON.stringify(respostaNeta) === JSON.stringify(correcteNeta)) {
+        punts++;
+        soCorrecte.play();
+        mostrarResultat(true, "✅ Correcte!");
+      } else {
+        soError.play();
+        mostrarResultat(false, `❌ Incorrecte. Resposta correcta: ${notesActuals.join(" ")}`);
+      }
+
+      bloquejarSiAcabat();
+    }
+
+    function mostrarResultat(correcte, missatge) {
+      const el = document.getElementById("resultat");
+      el.textContent = missatge;
+      el.style.color = correcte ? "green" : "red";
+    }
+
+    function bloquejarSiAcabat() {
+      document.getElementById("punts").textContent = `Punts: ${punts}`;
+      if (totalRespostes >= 10) {
+        document.getElementById("resum").textContent = `Test acabat! Has fet ${punts} punts de 10.`;
+        btnComprovar.disabled = true;
+        btnSeguent.disabled = true;
+        inputResposta.disabled = true;
+        document.getElementById("temps").textContent = `Temps restant: 0s`;
+      }
+    }
+
+    btnComprovar.addEventListener("click", comprovar);
+    btnSeguent.addEventListener("click", () => {
+      if (totalRespostes < 10) nouAcord();
+    });
+    inputResposta.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        btnComprovar.click();
+      }
+    });
+
+    window.onload = () => {
+      soBenvinguda.play().catch(() => {});
+      nouAcord();
+    };
+  </script>
 </body>
 </html>
